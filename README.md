@@ -5,4 +5,4 @@ Just another collection of PowerShell functions I've built and partially consoli
 
 Fuction1: Set-VMHostSNMP - this function will enable and configure the common user-defined variables for SNMP on a VMware ESXi host(s).
 
-HELP is available by importing the function and typing 'Get-Help <functioname> -full'
+HELP is available by importing the function and typing 'Get-Help (functionname) -full'
