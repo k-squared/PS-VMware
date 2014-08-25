@@ -1,0 +1,54 @@
+function Set-VMHostSNMP {
+
+<#
+.SYNOPSIS
+    This function will enable and configure the user defined SNMP settings on a VMware ESXi host.
+
+.DESCRIPTION
+    This function will log into a ESXi host(s) via FQDN and configure the SNMP settings for 'CommunityName', 'SysLocation' and 'Target Host'
+    as well as enable the SNMP functionality.  This is all being done via esxcli (Get-Esxcli)
+
+.PARAMETER VMHost
+    Specifies the FQDN of an ESXi host as defined in vCenter as a string.
+
+.PARAMETER Community
+    Specifies the SNMP Community Name as a string
+
+.PARAMETER SysLocation
+    Specifies the SNMP System Location as a string (optional)
+
+.PARAMETER Target
+    Specifies the SNMP Target hosts (optional - formatted as <ip or hostname@port/community>)
+
+.EXAMPLE
+    Set-SNMPSettings -VMHost 'test-r720-esx01.company.com' -Community 'public' -SysLocation 'DC01' -Target '192.168.100.100@162/public'
+#>
+
+    [CmdletBinding()]
+    param(
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0, HelpMessage="The FQDN of the ESXi host")]
+    [string[]]$VMHost,
+
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true, Position=1, HelpMessage="The SNMP Community Name")]
+    [string[]]$Community,
+
+    [Parameter(Mandatory=$false, ValueFromPipeline=$true, Position=2, HelpMessage="The SNMP Location")]
+    [string[]]$SysLocation,
+
+    [Parameter(Mandatory=$false, ValueFromPipeline=$true, Position=3, HelpMessage="The SNMP Target Host")]
+    [string[]]$Target)
+
+    Foreach ($server in $VMHost) {
+        Write-Verbose "Applying SNMP settings on $VMHost and enabling, if neccessary."
+
+		Write-Verbose "Enter in the ESXi host root credentials"
+        Connect-VIServer $VMHost -Credential (Get-Credential)
+
+        $esxcli = Get-EsxCli
+        $esxcli.system.snmp.set($null,$Community,"true",$null,$null,$null,$null,$null,$null,$null,$null,$null,$SysLocation, $Target)
+        $esxcli.system.snmp.get()
+
+        Disconnect-VIServer $VMHost -Confirm:$false
+        Write-Verbose "Finished enabling and configure SNMP settings, please verify changes."
+    }
+}
